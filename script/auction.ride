@@ -208,8 +208,10 @@ func curveFunction(wavesReserves: Int) = {
     let w = convertWavesToNeutrino(wavesReserves, p)
     let brRaw = fraction(w, rawMult, u)
     let powerRaw = a * (1 * rawMult - brRaw)
-    let expInPowerRaw = pow(EXP, rawScale, powerRaw, rawScale, rawScale, DOWN)
-    expInPowerRaw
+    let expInPowerValueRaw = pow(EXP, rawScale, powerRaw, rawScale, rawScale, DOWN)
+
+    let constCoefficient = fraction(u, PRICELET, 3 * p)
+    fraction(constCoefficient, expInPowerValueRaw, rawMult)
 }
 #-------------------Callable---------------------------
 
