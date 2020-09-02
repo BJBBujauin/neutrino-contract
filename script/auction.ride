@@ -82,9 +82,12 @@ let neutrinoLockedBalance = getNumberByAddressAndKey(neutrinoContract, NeutrinoL
 #cannot be expressed by complexity limitations: let wavesLockedBalance = getNumberByAddressAndKey(neutrinoContract, WavesLockedBalanceKey) #locked balance from WAVES -> USDN swap
 let reserve = wavesBalance(neutrinoContract).regular -
     getNumberByAddressAndKey(neutrinoContract, WavesLockedBalanceKey) #waves reserves to cover USDN supply
+let reservesInUsdn = convertWavesToNeutrino(reserve, currentPrice)
 let neutrinoSupply = neutrinoLockedBalance + assetInfo(neutrinoAssetId).value().quantity - assetBalance(neutrinoContract, neutrinoAssetId) - assetBalance(liquidationContract, neutrinoAssetId) # supply outside main sc or liquidation contract
-let deficit = neutrinoSupply - convertWavesToNeutrino(reserve, currentPrice)
+let deficit = neutrinoSupply - reservesInUsdn
 let currentMaxRoi = fraction(deficit, 100, neutrinoSupply)
+let multBR = 1000
+let currentBR = fraction(reservesInUsdn, multBR, neutrinoSupply)
 let firstOrder = getStringByKey(FirstOrderKey)
 
 #-------------------Get functions----------------------
@@ -154,6 +157,7 @@ func internalAddBuyBondOrder(roi : Int, price: Int, prevOrder: String, inv: Invo
     let newOrderId = toBase58String(inv.transactionId)
 
     if (isBlocked) then throw("contract is blocked by EMERGENCY SHUTDOWN actions until reactivation by emergency oracles") else
+    if (currentBR < 1 * multBR) then throw("impossible to buy nsbt with discount in surplus - BR=" + currentBR.toString() + "/" + multBR.toString()) else
     if (pmt.amount < MINORDERTOTAL) then throw("min order total equals " + toString(MINORDERTOTAL)) else
     if (roi > MAXROI) then throw("max setOrder ROI is 95%") else
     if (deficit > 0 && roi < 0) then throw("can't place order with negative roi during deficit") else
@@ -191,7 +195,31 @@ func internalAddBuyBondOrder(roi : Int, price: Int, prevOrder: String, inv: Invo
         ] ++ orderData(newOrderId, pmt.amount, 0, owner, NEW, roi, price)
 }
 
+func curveFunction(wavesReserves: Int) = {
+    let EXP = 2718281
+    let rawMult = 1000 * 1000           #!!! TODO exists
+    let u = 24 * 1000 * 1000 * PAULI    #!!! TODO exists
+    let p = 3 * PRICELET                #!!! TODO exists
+
+    let a = 3 #!!! TODO read from state
+
+    let w = convertWavesToNeutrino(wavesReserves, p)
+    let brRaw = fraction(w, rawMult, u)
+    let powerRaw = a * (1 * rawMult - brRaw)
+    let expInPowerRaw = pow(EXP, rawMult, powerRaw, rawMult, rawMult, DOWN)
+    expInPowerRaw
+}
 #-------------------Callable---------------------------
+
+@Callable(i)
+func buyNsbtInSurplus() = {
+    let w = 12 * 1000 * 1000 * WAVELET
+    let pay = 100*1000 * WAVELET
+    let e1 = curveFunction(w)
+    let e2 = curveFunction(w + pay)
+    if (e1 > 1) then throw("e1=" + e1.toString() + " e2=" + e2.toString()) else
+    []
+}
 
 # set buy NSBT order
 # [called by user]
