@@ -198,6 +198,8 @@ func internalAddBuyBondOrder(roi : Int, price: Int, prevOrder: String, inv: Invo
 func curveFunction(wavesReserves: Int) = {
     let EXP = 2718281
     let rawMult = 1000 * 1000           #!!! TODO exists
+    let rawScale = 6
+
     let u = 24 * 1000 * 1000 * PAULI    #!!! TODO exists
     let p = 3 * PRICELET                #!!! TODO exists
 
@@ -206,7 +208,7 @@ func curveFunction(wavesReserves: Int) = {
     let w = convertWavesToNeutrino(wavesReserves, p)
     let brRaw = fraction(w, rawMult, u)
     let powerRaw = a * (1 * rawMult - brRaw)
-    let expInPowerRaw = pow(EXP, rawMult, powerRaw, rawMult, rawMult, DOWN)
+    let expInPowerRaw = pow(EXP, rawScale, powerRaw, rawScale, rawScale, DOWN)
     expInPowerRaw
 }
 #-------------------Callable---------------------------
