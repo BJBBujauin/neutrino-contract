@@ -195,33 +195,33 @@ func internalAddBuyBondOrder(roi : Int, price: Int, prevOrder: String, inv: Invo
         ] ++ orderData(newOrderId, pmt.amount, 0, owner, NEW, roi, price)
 }
 
-func curveFunction(wavesReserves: Int) = {
+func curveFunction(wRaw: Int, uRaw: Int) = {
     let EXP = 2718281
     let rawMult = 1000 * 1000           #!!! TODO exists
     let rawScale = 6
 
-    let u = 24 * 1000 * 1000 * PAULI    #!!! TODO exists
     let p = 3 * PRICELET                #!!! TODO exists
 
     let a = 3 #!!! TODO read from state
 
-    let w = convertWavesToNeutrino(wavesReserves, p)
-    let brRaw = fraction(w, rawMult, u)
+    let w = convertWavesToNeutrino(wRaw, p)
+    let brRaw = fraction(w, rawMult, uRaw)
     let powerRaw = a * (1 * rawMult - brRaw)
     let expInPowerValueRaw = pow(EXP, rawScale, powerRaw, rawScale, rawScale, DOWN)
 
-    let constCoefficient = fraction(u, PRICELET, 3 * p)
+    let constCoefficient = fraction(uRaw, PRICELET, 3 * p)
     fraction(constCoefficient, expInPowerValueRaw, rawMult)
 }
 #-------------------Callable---------------------------
 
 @Callable(i)
-func buyNsbtInSurplus() = {
-    let w = 12 * 1000 * 1000 * WAVELET
-    let pay = 100*1000 * WAVELET
-    let e1 = curveFunction(w)
-    let e2 = curveFunction(w + pay)
-    if (e1 > 1) then throw("e1=" + e1.toString() + " e2=" + e2.toString()) else
+func buyNsbtInSurplus(wDec: Int, payDec: Int, uDec: Int) = {
+    let wRaw = wDec * WAVELET
+    let payRaw = payDec * WAVELET
+    let uRaw = uDec * PAULI
+    let f1 = curveFunction(wRaw, uRaw)
+    let f2 = curveFunction(wRaw + payRaw, uRaw)
+    if (f1 > 1) then throw("f1=" + f1.toString() + " f2=" + f2.toString()) else
     []
 }
 
