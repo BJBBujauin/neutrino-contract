@@ -196,8 +196,8 @@ func internalAddBuyBondOrder(roi : Int, price: Int, prevOrder: String, inv: Invo
 }
 
 func curveFunction(wRaw: Int, uRaw: Int) = {
-    let mult = 1000 * 1000 * 1000              #!!! TODO exists
-    let multScale = 9                   #!!! TODO exists
+    let mult = 100 * 1000 * 1000              #!!! TODO exists
+    let multScale = 8                   #!!! TODO exists
     let EXP = 2718281000
 
     let p = 3 * PRICELET                #!!! TODO exists
