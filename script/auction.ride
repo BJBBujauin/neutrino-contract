@@ -196,23 +196,34 @@ func internalAddBuyBondOrder(roi : Int, price: Int, prevOrder: String, inv: Invo
 }
 
 func curveFunction(wRaw: Int, uRaw: Int) = {
+    let mult = 1000 * 1000              #!!! TODO exists
+    let multScale = 6                   #!!! TODO exists
     let EXP = 2718281
-    let rawMult = 1000 * 1000           #!!! TODO exists
-    let rawScale = 6
 
     let p = 3 * PRICELET                #!!! TODO exists
 
     let a = 3 #!!! TODO read from state
 
-    let w = convertWavesToNeutrino(wRaw, p)
-    let brRaw = fraction(w, rawMult, uRaw)
-    let powerRaw = a * (1 * rawMult - brRaw)
-    let expInPowerValueRaw = pow(EXP, rawScale, powerRaw, rawScale, rawScale, DOWN)
+    let wReservesInUsdn = convertWavesToNeutrino(wRaw, p)
+    let brMult = fraction(wReservesInUsdn, mult, uRaw)
+    let powerMult = a * (brMult - 1 * mult)
+    let expInPowerMult = pow(EXP, multScale, powerMult, multScale, multScale, DOWN)
 
-    let constCoefficient = fraction(uRaw, PRICELET, 3 * p)
-    fraction(constCoefficient, expInPowerValueRaw, rawMult)
+    let constCoeff = fraction(uRaw, PRICELET, a * p)
+    let finalResult = fraction(constCoeff, mult, expInPowerMult)
+    (wReservesInUsdn, brMult, powerMult, expInPowerMult, constCoeff, finalResult)
 }
 #-------------------Callable---------------------------
+
+func toStr(name: String, l: (Int, Int, Int, Int, Int, Int)) = {
+    name + "=[wReservesInUsdn" + toString(l._1)
+        + "brMult" + toString(l._2)
+        + "powerMult" + toString(l._3)
+        + "expInPowerMult" + toString(l._4)
+        + "constCoeff" + toString(l._5)
+        + "finalResult" + toString(l._6)
+        + "]"
+}
 
 @Callable(i)
 func buyNsbtInSurplus(wDec: Int, payDec: Int, uDec: Int) = {
@@ -221,7 +232,7 @@ func buyNsbtInSurplus(wDec: Int, payDec: Int, uDec: Int) = {
     let uRaw = uDec * PAULI
     let f1 = curveFunction(wRaw, uRaw)
     let f2 = curveFunction(wRaw + payRaw, uRaw)
-    if (f1 > 1) then throw("f1=" + f1.toString() + " f2=" + f2.toString()) else
+    if (f1._1 > 1) then throw(toStr("f1", f1) + "\n" + toStr("f2", f2)) else
     []
 }
 
