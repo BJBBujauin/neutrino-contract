@@ -216,12 +216,12 @@ func curveFunction(wRaw: Int, uRaw: Int) = {
 #-------------------Callable---------------------------
 
 func toStr(name: String, l: (Int, Int, Int, Int, Int, Int)) = {
-    name + "=[wReservesInUsdn" + toString(l._1)
-        + "brMult" + toString(l._2)
-        + "powerMult" + toString(l._3)
-        + "expInPowerMult" + toString(l._4)
-        + "constCoeff" + toString(l._5)
-        + "finalResult" + toString(l._6)
+    name + "=[wReservesInUsdn=" + toString(l._1)
+        + " brMult=" + toString(l._2)
+        + " powerMult=" + toString(l._3)
+        + " expInPowerMult=" + toString(l._4)
+        + " constCoeff=" + toString(l._5)
+        + " finalResult=" + toString(l._6)
         + "]"
 }
 
