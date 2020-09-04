@@ -161,11 +161,9 @@ func internalAddBuyBondOrder(roi : Int, price: Int, prevOrder: String, inv: Invo
     let newOrderId = toBase58String(inv.transactionId)
 
     if (isBlocked) then throw("contract is blocked by EMERGENCY SHUTDOWN actions until reactivation by emergency oracles") else
-    if (currentBrMult >= 1 * MULT) then throw("impossible to buy nsbt with discount in surplus - BR=" + currentBrMult.toString() + "/" + MULT.toString()) else
     if (pmt.amount < MINORDERTOTAL) then throw("min order total equals " + toString(MINORDERTOTAL)) else
     if (roi > MAXROI) then throw("max setOrder ROI is 95%") else
-    if (deficit > 0 && roi < 0) then throw("can't place order with negative roi during deficit") else
-    if (roi < -MAXROI) then throw("min setOrder ROI is -95%") else
+    if (roi < 0) then throw("can't place order with negative roi") else
     if (roi == 0) then throw("roi should not be equal to 0") else
     if (isDefined(pmt.assetId)) then throw("can use waves only") else
     if (getOrderOwner(newOrderId) != "") then throw("order exists") else
@@ -233,7 +231,7 @@ func buyNsbtInSurplus() = {
     let ownerAddress = i.caller
 
     if (isBlocked) then throw("contract is blocked by EMERGENCY SHUTDOWN actions until reactivation by emergency oracles") else
-    if (currentBrMult < 1 * MULT) then throw("impossible to buy nsbt with discount in surplus - BR=" + currentBrMult.toString() + "/" + MULT.toString()) else
+    if (currentBrMult < 1 * MULT) then throw("use instantBuyNsbtOrFail or addBuyBondOrder methods to buy nsbt when BR < 1: currentBR=" + currentBrMult.toString() + "/" + MULT.toString()) else
     if (isDefined(pmt.assetId)) then throw("can use waves only") else
     let f0 = curveFunction(reserve, neutrinoSupply, currentPrice)
     let f1 = curveFunction(reserve + pmtAmount, neutrinoSupply, currentPrice)
