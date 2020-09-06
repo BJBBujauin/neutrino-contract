@@ -30,8 +30,8 @@ func getNumberByAddressAndKey(address: Address, key: String) = {
 let WAVELET = 100000000
 let PAULI = 1000000
 let PRICELET = 1000000 # 10^6
-let MULT = 1000000 #10^6
-let SCALEMULT = 6
+let MULT = 100000000 #10^8
+let SCALEMULT = 8
 
 let MINORDERTOTAL = 10*WAVELET
 let MAXROI = 95
