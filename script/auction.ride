@@ -225,8 +225,7 @@ func toStr(name: String, l: (Int, Int, Int, Int, Int, Int)) = {
         + "]"
 }
 
-@Callable(i)
-func buyNsbtInSurplus() = {
+func internalBuyNsbtInSurplus(i: Invocation, noLessThanNsbt: Int) = {
     let pmt = i.payments[0].value()
     let pmtAmount = pmt.amount
     let ownerAddress = i.caller
@@ -237,6 +236,8 @@ func buyNsbtInSurplus() = {
     let f0 = curveFunction(reserve, neutrinoSupply, currentPrice)
     let f1 = curveFunction(reserve + pmtAmount, neutrinoSupply, currentPrice)
     let nsbtAmount = f0._1 - f1._1
+
+    if (noLessThanNsbt > 0 && nsbtAmount < noLessThanNsbt) then throw("Calculated nsbt amount [" + nsbtAmount.toString() + "] is less than noLessThanNsbt param [" + noLessThanNsbt.toString() + "]") else
 
     let nsbt2WavesPriceRaw = calcNsbt2WavesPriceRaw(pmtAmount, nsbtAmount)
     let roi = fraction(getReversePrice(nsbt2WavesPriceRaw), 100, currentPrice) - 100
@@ -250,6 +251,16 @@ func buyNsbtInSurplus() = {
       StringEntry("debug_f0", toStr("f0", f0)),
       StringEntry("debug_f1", toStr("f1", f1))
     ]
+}
+
+@Callable(i)
+func buyNsbtInSurplus() = {
+    internalBuyNsbtInSurplus(i, 0)
+}
+
+@Callable(i)
+func buyNsbtInSurplusOrFail(noLessThanNsbt: Int) = {
+    internalBuyNsbtInSurplus(i, noLessThanNsbt)
 }
 
 # set buy NSBT order
